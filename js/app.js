@@ -1,11 +1,14 @@
 // Enemies our player must avoid
-var Enemy = function() {
+var Enemy = function(x,y,speed) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
 };
 
 // Update the enemy's position, required method for game
@@ -14,6 +17,10 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
+    this.x += this.speed*dt;
+    if(this.x > 101*5) {
+        this.x = 101*(Math.random()*-3);
+    }
 };
 
 // Draw the enemy on the screen, required method for game
@@ -24,12 +31,90 @@ Enemy.prototype.render = function() {
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
+var Player = function() {
+    this.sprite = 'images/char-cat-girl.png';
+    this.x = 101*2;
+    this.y = 60 + 83*4;
+}
 
+//Update player position on map. Check collision with all enemies.
+//Reset player if collide with an enemy.
+Player.prototype.update = function(allEnemies) {
+    var i, len = allEnemies.length;
+    for (i=0; i<len; i++) {
+        if(collision(this,allEnemies[i])) {
+            this.reset();
+            break;
+        }
+    }
+}
+
+//Draw player on map.
+Player.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+//Reset player to the bottom of the map.
+Player.prototype.reset = function() {
+    this.x = 101*2;
+    this.y = 60 + 83*4;
+}
+
+//Move character according to keyboard input. Do not move if at
+//boundary. Reset player if reaches the river.
+Player.prototype.handleInput = function(key) {
+    if(key == 'left') {
+        if(this.x > 0) {
+            this.x -= 101;
+        }
+    }
+    if(key == 'right') {
+        if(this.x < 101*4) {
+            this.x += 101;
+        }
+    }
+  // If player reaches the river reset player to the bottom.
+    if(key == 'up') {
+        if(this.y > 60) {
+            this.y -= 83;
+        } else if (this.y <= 60) {
+            this.reset();
+        }
+    }
+    if(key == 'down') {
+        if(this.y < 60 + 83*4) {
+          this.y += 83;
+        }
+    }
+}
+
+// A helper function to check collision. Input player and an emeny.
+// Output true or false.
+var collision = function(player, enemy) {
+    if(
+        player.y == enemy.y &&
+        player.x <= enemy.x + 81 &&
+        player.x >= enemy.x - 81
+    ) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
+//Start each enemy at a random x coordinate on map. 
+var allEnemies = [
+  enemy1 = new Enemy(101 * (-1 + Math.random()*6), 60 + 83*2, 150),
+  enemy2 = new Enemy(101 * (-1 + Math.random()*6), 60 + 83, 200),
+  enemy3 = new Enemy(101 * (-1 + Math.random()*6), 60, 500),
+  enemy4 = new Enemy(101 * (-1 + Math.random()*6), 60 + 83*2, 150),
+  enemy5 = new Enemy(101 * (-1 + Math.random()*6), 60 + 83, 200)
+]
 
+var player = new Player();
 
 
 // This listens for key presses and sends the keys to your
